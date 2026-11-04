@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bank-postgres
+    environment:
+      POSTGRES_DB: bank_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: tu_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - bank-network
+
+  app:
+    build: .
+    container_name: bank-app
+    ports:
+      - "8080:8080"
+    environment:
+      # Ojo aquí: en lugar de 'localhost', usamos el nombre del servicio de postgres ('postgres')
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/bank_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=tu_password
+    depends_on:
+      - postgres
+    networks:
+      - bank-network
+
+volumes:
+  pgdata:
+
+networks:
+  bank-network:
+    driver: bridge
